@@ -40,6 +40,8 @@ function addRepoLIst(data) {
     );
   
     add.append(delRepoList(add));
+
+    searchClickHandler(add, data);
   
     return add;
 }
@@ -51,12 +53,25 @@ function delRepoList(data) {
     repoClose.addEventListener("click", () => {
         data.remove();
     });
-    
-    repoClose.removeEventListener("click", () => {
-        data.remove();
-    });
+
+    searchClickHandler(repoClose, data);
   
     return repoClose;
+}
+
+const searchClickHandler = () => {
+    search.removeEventListener("click", (e) => {
+        for (let i = 0; i < data.items.length; i++) {
+            if (e.target.innerText == data.items[i].name) {
+                repo.prepend(addRepoLIst(data.items[i]));
+
+                e.target.innerText = "";
+                search.textContent = "";
+            }
+        }
+
+        input.value = "";
+    });
 }
 
 async function showRequest(e) {
@@ -74,10 +89,11 @@ async function showRequest(e) {
             `https://api.github.com/search/repositories?q=${input.value}&per_page=5`
         );
 
-        let data = await response.json();
-        data.items.map((item) => {
+        const data = await response.json();
+
+        data.hasOwnProperty('items') ? data.items.map((item) => {
             search.append(searchData(item.name));
-        });
+        }) : null;
 
         search.addEventListener("click", (e) => {
             for (let i = 0; i < data.items.length; i++) {
@@ -91,19 +107,6 @@ async function showRequest(e) {
 
             input.value = "";
         });
-
-        search.removeEventListener("click", (e) => {
-            for (let i = 0; i < data.items.length; i++) {
-                if (e.target.innerText == data.items[i].name) {
-                    repo.prepend(addRepoLIst(data.items[i]));
-
-                    e.target.innerText = "";
-                    search.textContent = "";
-                }
-            }
-
-            input.value = "";
-        });    
     } catch (err) {
         console.error('Ошибка:', err);
     }
